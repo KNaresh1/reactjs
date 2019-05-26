@@ -1,32 +1,32 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import SeasonDisplay from './SeasonDisplay';
+import Spinner from './Spinner';
 
 class App extends React.Component {
-	constructor(props) {
-		super(props);
+	// INITIALIZE component state
+	state = {lat: null, errorMsg: ''};
 
-		// THIS IS THE ONLY TIME we do direct assignment 
-		// to this.state
-		this.state = {lat: null, errorMsg ''};
-
+	componentDidMount() {
 		window.navigator.geolocation.getCurrentPosition(
-            (position) => {
-            	// We have to call 'setState'  to update the state of a component which 
-            	// automatically re-render the component on any state change.
-               this.setState({ lat: position.coords.latitude });
-            }, (err) => {
-                this.setState({ err.message});
-        	}
+           position => this.setState({ lat: position.coords.latitude }),
+           err => this.setState({ errorMsg: err.message})
         );
 	}
 
+	renderContent() {
+		if(this.state.errorMsg && !this.state.lat) {
+        	return <div>Error: {this.state.errorMsg}</div>;
+        }
+        if(this.state.lat && !this.state.errorMsg) {
+        	return <SeasonDisplay lat={this.state.lat} />;
+        }
+        return <Spinner message="Please accept location request"/>;
+	}
+
     render() {
-        return (
-        	<div>
-        		Latitude: {this.state.lat} <br/>
-        		Error: {this.state.errorMsg}
-        	</div>);
+        return <div className="border red">{this.renderContent()}</div>;
     }
 }
 
-ReactDOM.render( < App / > , document.querySelector('#root'));
+ReactDOM.render(<App />, document.querySelector('#root'));
